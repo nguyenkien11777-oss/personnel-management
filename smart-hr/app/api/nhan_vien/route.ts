@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
-import type { PhongBan } from "@/models/phong_ban_model"
+import type { NhanVien } from "@/models/nhan_vien_model"
 import { 
-  taoPhongBan, 
-  layTatCaPhongBan, 
-  capNhatPhongBan, 
-  xoaPhongBan 
-} from "@/services/phong_ban_service"
+  taoNhanVien, 
+  layTatCaNhanVien,
+  capNhatNhanVien 
+} from "@/services/nhan_vien_service"
 
 /**
  * @swagger
- * /api/phong_ban:
+ * /api/nhan_vien:
  *   get:
- *     summary: Lấy danh sách phòng ban
+ *     summary: Lấy danh sách nhân viên
  *     parameters:
  *       - in: query
  *         name: page
@@ -27,24 +26,15 @@ import {
  *         name: search
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: phongBanId
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Thành công
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 thanhCong:
- *                   type: boolean
- *                 duLieu:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/PhongBan'
- *                 tong:
- *                   type: integer
  *   post:
- *     summary: Tạo phòng ban mới
+ *     summary: Tạo nhân viên mới
  *     requestBody:
  *       required: true
  *       content:
@@ -52,12 +42,27 @@ import {
  *           schema:
  *             type: object
  *             required:
- *               - tenPhongBan
- *               - quanLyId
+ *               - ten
+ *               - email
+ *               - phongBanId
+ *               - chucVu
+ *               - luongCoBan
  *             properties:
- *               tenPhongBan:
+ *               ten:
  *                 type: string
- *               quanLyId:
+ *               email:
+ *                 type: string
+ *               soDienThoai:
+ *                 type: string
+ *               phongBanId:
+ *                 type: string
+ *               chucVu:
+ *                 type: string
+ *               luongCoBan:
+ *                 type: number
+ *               trangThai:
+ *                 type: string
+ *               ngayVaoLam:
  *                 type: string
  *     responses:
  *       201:
@@ -69,8 +74,9 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
     const search = searchParams.get('search') || ''
+    const phongBanId = searchParams.get('phongBanId') || undefined
 
-    const result = await layTatCaPhongBan(page, limit, search)
+    const result = await layTatCaNhanVien(page, limit, search, phongBanId)
 
     return NextResponse.json({
       thanhCong: true,
@@ -87,19 +93,19 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const data = await request.json() as Omit<PhongBan, "_id" | "soLuongNhanVien">
-    
-    const id = await taoPhongBan(data)
-    
+    const data = await request.json() as Omit<NhanVien, "_id">
+
+    const id = await taoNhanVien(data)
+
     return NextResponse.json({
       thanhCong: true,
-      thongBao: "Tạo phòng ban thành công",
+      thongBao: "Tạo nhân viên thành công",
       id
     }, { status: 201 })
   } catch (error) {
     console.error(error)
     return NextResponse.json(
-      { thanhCong: false, thongBao: "Lỗi tạo phòng ban" },
+      { thanhCong: false, thongBao: "Lỗi tạo nhân viên" },
       { status: 400 }
     )
   }

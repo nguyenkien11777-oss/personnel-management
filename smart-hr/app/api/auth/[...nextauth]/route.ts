@@ -8,21 +8,27 @@ const handler = NextAuth({
       name: "credentials",
       credentials: {},
 
-      async authorize(credentials) {
-
-        if (
-          credentials?.email === "admin@test.com" &&
-          credentials?.password === "123456"
-        ) {
-          return {
-            id: "1",
-            name: "Admin",
-            email: "admin@test.com",
-            role: "admin"
+async authorize(credentials) {
+        try {
+          const { email, password } = credentials as { email: string; password: string }
+          
+          const user = await import('@/services/nguoi_dung_service').then(m => m.kiemTraDangNhap(email, password))
+          
+          if (user) {
+            return {
+              id: (user._id as any).toString(),
+              name: user.ten,
+              email: user.email,
+              role: user.vaiTro,
+              nhanVienId: user.nhanVienId?.toString()
+            }
           }
+          
+          return null
+        } catch (error) {
+          console.error('Auth error:', error)
+          return null
         }
-
-        return null
       },
     }),
   ],
